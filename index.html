@@ -42,6 +42,24 @@ body{
   box-shadow:0 10px 0 #0d0e11, 0 20px 40px rgba(0,0,0,.55);
 }
 .label{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+.label-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.label-row .label{margin-bottom:0;}
+
+/* info button + box */
+.info-btn{
+  width:24px;height:24px;border-radius:50%;border:none;cursor:pointer;flex:none;
+  background:#2c3037;color:var(--muted);font-family:'Georgia',serif;font-style:italic;font-weight:700;font-size:14px;
+  display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 0 #15171a;
+  transition:transform .06s, box-shadow .06s, background .15s, color .15s;
+}
+.info-btn:active{transform:translateY(2px);box-shadow:0 0 0 #15171a;}
+.info-btn.open{background:var(--blue);color:#06121d;box-shadow:0 2px 0 #0d5a8a;}
+.info-box{
+  margin-top:9px;background:#16181c;border:1px solid #30343b;border-left:3px solid var(--blue);
+  border-radius:12px;padding:11px 13px;color:#aeb4bd;font-size:12px;font-weight:600;line-height:1.55;letter-spacing:.1px;
+}
+.info-box.warn{border-left-color:var(--amber);}
+.info-box[hidden]{display:none;}
 
 /* fields */
 .field{
@@ -100,12 +118,13 @@ body{
 }
 .house .pct{font-size:12px;padding:3px 9px;border-radius:9px;background:rgba(0,0,0,.22);font-weight:800;}
 .house.on .pct{background:rgba(255,255,255,.28);}
-.hstate{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;font-weight:600;letter-spacing:.3px;}
+.hstate-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;}
+.hstate{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.3px;}
 
 /* desktop hover (skipped on touch) */
 @media (hover:hover){
   .house:hover{filter:brightness(1.09);}
-  .swap .dot{transition:color .15s,border-color .15s;}
+  .info-btn:hover{color:var(--txt);}
 }
 
 @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.035)}100%{transform:scale(1)}}
@@ -134,18 +153,25 @@ body{
   <div class="hint">Fill in either field &mdash; it converts both ways</div>
 
   <div class="card">
-    <div class="label">Amount</div>
+    <div class="label-row">
+      <span class="label">Amount</span>
+      <button class="info-btn" data-info="iAmt" aria-label="More info">i</button>
+    </div>
     <div class="field" id="amtField">
       <svg class="rbx" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
         <polygon points="16,1.5 28.6,8.75 28.6,23.25 16,30.5 3.4,23.25 3.4,8.75" fill="url(#rbxGold)" stroke="#a86d08" stroke-width="1"/>
-        <text x="16" y="22.5" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="18" font-weight="900" fill="#fff">R</text>
+        <text x="16" y="22.5" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="18" font-weight="900" fill="#fff">B</text>
       </svg>
       <input class="input" id="amt" type="text" inputmode="decimal" placeholder="0" value="1000" autocomplete="off">
     </div>
+    <div class="info-box" id="iAmt" hidden>Amount stands for Bloxflip coins. These are the coins you play with on the site.</div>
 
     <div class="swap"><span class="ln"></span><span class="dot">&#8645;</span><span class="ln"></span></div>
 
-    <div class="label">Result</div>
+    <div class="label-row">
+      <span class="label">Result</span>
+      <button class="info-btn" data-info="iRes" aria-label="More info">i</button>
+    </div>
     <div class="field result" id="baseField">
       <svg class="rbx" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
         <polygon points="16,1.5 28.6,8.75 28.6,23.25 16,30.5 3.4,23.25 3.4,8.75" fill="url(#rbxGold)" stroke="#a86d08" stroke-width="1"/>
@@ -154,6 +180,7 @@ body{
       <input class="input green" id="base" type="text" inputmode="decimal" placeholder="0" autocomplete="off">
     </div>
     <div class="formula">result <span class="chain" id="chain">+30% +30%</span> = amount</div>
+    <div class="info-box" id="iRes" hidden>R stands for Robux. The result shows the value in Robux.</div>
 
     <div class="fx">
       <div class="fx-row">
@@ -176,7 +203,11 @@ body{
       <span>&#127968; House</span>
       <span class="pct">+2.7%</span>
     </button>
-    <div class="hstate" id="hstate">off &middot; tap to activate</div>
+    <div class="hstate-row">
+      <span class="hstate" id="hstate">off &middot; tap to activate</span>
+      <button class="info-btn" data-info="iHouse" aria-label="More info">i</button>
+    </div>
+    <div class="info-box warn" id="iHouse" hidden>The 2.7% is the average house edge of roulette. The edge differs if you play other gamble games. The real outcome can change with luck. Avoid getting greedy. Only cash out once the play requirements are reached. Never continue beyond that point.</div>
   </div>
 </div>
 
@@ -277,6 +308,26 @@ houseBtn.addEventListener('click', function(){
   hstate.innerHTML = houseOn ? 'on &middot; +2.7% active' : 'off &middot; tap to activate';
   if(lastEdited === 'base'){ fromBase(); pop(amtField); }
   else { fromAmount(); pop(baseField); }
+});
+
+/* info toggles */
+var infoBoxes = document.querySelectorAll('.info-box');
+var infoBtnsAll = document.querySelectorAll('.info-btn');
+function closeAllInfo(){
+  infoBoxes.forEach(function(b){ b.setAttribute('hidden',''); });
+  infoBtnsAll.forEach(function(b){ b.classList.remove('open'); });
+}
+infoBtnsAll.forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var box = document.getElementById(btn.getAttribute('data-info'));
+    var willOpen = box.hasAttribute('hidden');
+    closeAllInfo();
+    if(willOpen){ box.removeAttribute('hidden'); btn.classList.add('open'); }
+  });
+});
+document.addEventListener('click', function(e){
+  if(e.target.closest('.info-btn') || e.target.closest('.info-box')) return;
+  closeAllInfo();
 });
 
 fromAmount();
